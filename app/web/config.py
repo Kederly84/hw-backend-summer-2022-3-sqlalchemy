@@ -1,3 +1,4 @@
+import os
 import typing
 from dataclasses import dataclass
 
@@ -5,6 +6,8 @@ import yaml
 
 if typing.TYPE_CHECKING:
     from app.web.app import Application
+
+base_config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)).replace("app/web", ""), "config.yml")
 
 
 @dataclass
@@ -39,6 +42,12 @@ class Config:
     session: SessionConfig = None
     bot: BotConfig = None
     database: DatabaseConfig = None
+
+
+def get_sqlalchemy_url(config_path: str = base_config_path):
+    with open(config_path, "r") as f:
+        cfg = (yaml.safe_load(f))["database"]
+    return f"postgresql+asyncpg://{cfg['user']}:{cfg['password']}@{cfg['host']}/{cfg['database']}"
 
 
 def setup_config(app: "Application", config_path: str):
